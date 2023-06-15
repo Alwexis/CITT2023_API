@@ -59,7 +59,7 @@ function base64Decoder(base64Data, nombre) {
 
     const newB64Data = base64Data.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(newB64Data, 'base64');
-    fs.writeFileSync(`uploads/${nombre}.${extension}`, buffer);
+    fs.writeFileSync(`public/uploads/${nombre}.${extension}`, buffer);
     return `${nombre}.${extension}`;
 }
 
