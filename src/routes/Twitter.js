@@ -1,5 +1,7 @@
 import express from 'express';
 import { DB } from '../db.js';
+import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
 export const router = express.Router();
 export const path = '/twitter';
@@ -14,8 +16,22 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     const data = req.body;
     const REQUIRED_FIELDS = ['user', 'title', 'content'];
+    const POSSIBLE_FIELDS = ['user', 'title', 'content', 'attachments'];
     if (!REQUIRED_FIELDS.every(field => field in data)) return res.status(400).json({ message: 'Faltan campos requeridos.' });
-    const result = await DB.post('CITT2023', 'Twitter', data);
+    if (!POSSIBLE_FIELDS.filter(r_field => POSSIBLE_FIELDS.includes(r_field))) return res.status(400).json({ message: 'Hay campos no permitidos.' });
+    let result;
+    if (data.attachments) {
+        let newAttachments = [];
+        for (let attachment of data.attachments) {
+            let uuid = uuidv4();
+            let attachmentPath = base64Decoder(attachment, uuid);
+            newAttachments.push(attachmentPath);
+        }
+        delete data.attachments;
+        data.attachments = newAttachments;
+        result = await DB.post('CITT2023', 'Twitter', data);
+    }
+    else result = await DB.post('CITT2023', 'Twitter', data);
     if (!result) return res.status(500).json({ message: 'Error al guardar el tweet.' });
     return res.status(201).json({ message: 'Tweet guardado correctamente.' });
 });
@@ -23,7 +39,9 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const data = req.body;
     const REQUIRED_FIELDS = ['user', 'title', 'content'];
+    const POSSIBLE_FIELDS = ['user', 'title', 'content', 'attachments'];
     if (!REQUIRED_FIELDS.every(field => field in data)) return res.status(400).json({ message: 'Faltan campos requeridos.' });
+    if (!POSSIBLE_FIELDS.filter(r_field => POSSIBLE_FIELDS.includes(r_field))) return res.status(400).json({ message: 'Hay campos no permitidos.' });
     const result = await DB.put('CITT2023', 'Twitter', { _id: req.params.id }, data);
     if (!result) return res.status(500).json({ message: 'Error al actualizar el tweet.' });
     return res.status(200).json({ message: 'Tweet actualizado correctamente.' });
@@ -34,3 +52,32 @@ router.delete('/:id', async (req, res) => {
     if (!result) return res.status(500).json({ message: 'Error al eliminar el tweet.' });
     return res.status(200).json({ message: 'Tweet eliminado correctamente.' });
 });
+
+function base64Decoder(base64Data, nombre) {
+    const mimeType = getExtensionFromB64(base64Data);
+    const extension = getImageTypeFromMimeType(mimeType);
+
+    const newB64Data = base64Data.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(newB64Data, 'base64');
+    fs.writeFileSync(`public/uploads/${nombre}.${extension}`, buffer);
+    return `${nombre}.${extension}`;
+}
+
+function getExtensionFromB64(base64Data) {
+    const matches = base64Data.match(/^data:([A-Za-z-+/]+);base64,/);
+    if (matches && matches.length > 1) {
+      return matches[1];
+    }
+    return '';
+}
+
+function getImageTypeFromMimeType(mimeType) {
+    const mimeTypeToImageTypeMap = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/gif': 'gif',
+      // Agrega otros tipos MIME y tipos de imagen según sea necesario
+    };
+  
+    return mimeTypeToImageTypeMap[mimeType] || '';
+  }
