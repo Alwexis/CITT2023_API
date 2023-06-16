@@ -16,10 +16,14 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     const data = req.body;
     const REQUIRED_FIELDS = ['user', 'title', 'content'];
-    const POSSIBLE_FIELDS = ['user', 'title', 'content', 'attachments'];
+    const POSSIBLE_FIELDS = ['user', 'icon', 'title', 'content', 'attachments'];
     if (!REQUIRED_FIELDS.every(field => field in data)) return res.status(400).json({ message: 'Faltan campos requeridos.' });
     if (!POSSIBLE_FIELDS.filter(r_field => POSSIBLE_FIELDS.includes(r_field))) return res.status(400).json({ message: 'Hay campos no permitidos.' });
     let result;
+    data.date = new Date();
+    if (!data.icon) {
+        data.icon = 'https://citt2023.up.railway.app/no_pfp.svg'
+    }
     if (data.attachments) {
         let newAttachments = [];
         for (let attachment of data.attachments) {
@@ -39,7 +43,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const data = req.body;
     const REQUIRED_FIELDS = ['user', 'title', 'content'];
-    const POSSIBLE_FIELDS = ['user', 'title', 'content', 'attachments'];
+    const POSSIBLE_FIELDS = ['user', 'icon', 'title', 'content', 'attachments'];
     if (!REQUIRED_FIELDS.every(field => field in data)) return res.status(400).json({ message: 'Faltan campos requeridos.' });
     if (!POSSIBLE_FIELDS.filter(r_field => POSSIBLE_FIELDS.includes(r_field))) return res.status(400).json({ message: 'Hay campos no permitidos.' });
     const result = await DB.put('CITT2023', 'Twitter', { _id: req.params.id }, data);
