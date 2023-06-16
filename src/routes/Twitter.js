@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
         for (let attachment of data.attachments) {
             let uuid = uuidv4();
             let attachmentPath = base64Decoder(attachment, uuid);
-            newAttachments.push(attachmentPath);
+            newAttachments.push(`https://citt2023.up.railway.app/${attachmentPath}`);
         }
         delete data.attachments;
         data.attachments = newAttachments;
@@ -59,7 +59,7 @@ function base64Decoder(base64Data, nombre) {
 
     const newB64Data = base64Data.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(newB64Data, 'base64');
-    fs.writeFileSync(`public/uploads/${nombre}.${extension}`, buffer);
+    fs.writeFileSync(`uploads/${nombre}.${extension}`, buffer);
     return `${nombre}.${extension}`;
 }
 
