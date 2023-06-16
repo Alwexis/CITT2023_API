@@ -23,19 +23,21 @@ router.post('/', async (req, res) => {
     data.date = new Date();
     if (!data.icon) {
         data.icon = 'https://citt2023.up.railway.app/no_pfp.svg'
+    } else {
+        let uuid = uuidv4();
+        let iconPath = base64Decoder(data.icon, uuid);
+        data.icon = `https://citt2023.up.railway.app/${iconPath}`
     }
+    let attachments = [];
     if (data.attachments) {
-        let newAttachments = [];
         for (let attachment of data.attachments) {
             let uuid = uuidv4();
             let attachmentPath = base64Decoder(attachment, uuid);
-            newAttachments.push(`https://citt2023.up.railway.app/${attachmentPath}`);
+            attachments.push(`https://citt2023.up.railway.app/${attachmentPath}`);
         }
-        delete data.attachments;
-        data.attachments = newAttachments;
-        result = await DB.post('CITT2023', 'Twitter', data);
     }
-    else result = await DB.post('CITT2023', 'Twitter', data);
+    data.attachments = attachments;
+    await DB.post('CITT2023', 'Twitter', data);
     if (!result) return res.status(500).json({ message: 'Error al guardar el tweet.' });
     return res.status(201).json({ message: 'Tweet guardado correctamente.' });
 });
