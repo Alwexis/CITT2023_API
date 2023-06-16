@@ -19,7 +19,6 @@ router.post('/', async (req, res) => {
     const POSSIBLE_FIELDS = ['user', 'icon', 'title', 'content', 'attachments'];
     if (!REQUIRED_FIELDS.every(field => field in data)) return res.status(400).json({ message: 'Faltan campos requeridos.' });
     if (!POSSIBLE_FIELDS.filter(r_field => POSSIBLE_FIELDS.includes(r_field))) return res.status(400).json({ message: 'Hay campos no permitidos.' });
-    let result;
     data.date = new Date();
     if (!data.icon) {
         data.icon = 'https://citt2023.up.railway.app/no_pfp.svg'
@@ -37,7 +36,7 @@ router.post('/', async (req, res) => {
         }
     }
     data.attachments = attachments;
-    await DB.post('CITT2023', 'Twitter', data);
+    const result = await DB.post('CITT2023', 'Twitter', data);
     if (!result) return res.status(500).json({ message: 'Error al guardar el tweet.' });
     return res.status(201).json({ message: 'Tweet guardado correctamente.' });
 });
