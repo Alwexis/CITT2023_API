@@ -3,6 +3,8 @@ import fs from 'fs';
 import cors from 'cors';
 import { DB } from './db.js';
 import dotenv from 'dotenv';
+import WebSocket from 'ws';
+import http from 'http';
 
 dotenv.config();
 
@@ -13,6 +15,8 @@ app.use(cors());
 app.use(express.json({ limit: '2048mb' }));
 app.use(express.static('public'));
 app.use(express.static('uploads'));
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
 DB.connect();
 
@@ -25,6 +29,25 @@ fs.readdirSync('./src/routes').forEach(async file => {
         let { path, router } = await import(`./routes/${file}`);
         app.use(path, router);
     }
+});
+
+ws.on('connection', (socket) => {
+    connections.push(socket);
+    console.log('Cliente conectado');
+    socket.on('message', (message) => {
+        const parsedMessage = JSON.parse(message);
+        console.log('Mensaje recibido: ' + parsedMessage)
+        connections.forEach((con) => {
+            con.send(JSON.stringify(parsedMessage));
+        });
+        // socket.send('Respuesta del servidor: ' + message);
+        // ws.emit('notification', message);
+    });
+
+    // Evento de cierre de la conexión WebSocket
+    socket.on('close', () => {
+        console.log('Cliente desconectado');
+    });
 });
 
 app.listen(port, () => {
