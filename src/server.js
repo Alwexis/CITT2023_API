@@ -30,12 +30,12 @@ fs.readdirSync('./src/routes').forEach(async file => {
     }
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto ${port}`);
 });
 
-const server = http.createServer(app);
-const ws = new WebSocketServer({ server:app.listen(3001) });
+// const server = http.createServer(app);
+const ws = new WebSocketServer({ server: server });
 let connections = [];
 
 ws.on('connection', (socket) => {
