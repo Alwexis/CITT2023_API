@@ -17,7 +17,7 @@ app.use(express.json({ limit: '2048mb' }));
 app.use(express.static('public'));
 app.use(express.static('uploads'));
 const server = http.createServer(app);
-const ws = new WebSocketServer({ server });
+const ws = new WebSocketServer({ server:app.listen(port) });
 
 DB.connect();
 
