@@ -35,7 +35,8 @@ app.listen(port, () => {
 });
 
 const server = http.createServer(app);
-const ws = new WebSocketServer({ server });
+const ws = new WebSocketServer({ server:app.listen(3001) });
+let connections = [];
 
 ws.on('connection', (socket) => {
     connections.push(socket);
