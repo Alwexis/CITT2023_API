@@ -4,6 +4,7 @@ import cors from 'cors';
 import { DB } from './db.js';
 import dotenv from 'dotenv';
 import WebSocket from 'ws';
+import { WebSocketServer } from 'ws';
 import http from 'http';
 
 dotenv.config();
@@ -16,7 +17,7 @@ app.use(express.json({ limit: '2048mb' }));
 app.use(express.static('public'));
 app.use(express.static('uploads'));
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const ws = new WebSocketServer({ server });
 
 DB.connect();
 
